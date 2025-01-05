@@ -6,11 +6,11 @@
   "main": "./dist/index.cjs",
   "exports": {
     ".": {
-      "import": "./index.js",
+      "import": "./index.ts",
       "require": "./dist/index.cjs"
     },
-    "./sample": "./src/sample.js",
-    "./types": "./src/types.js"
+    "./sample": "./src/sample.ts",
+    "./types": "./src/types.ts"
   },
   "scripts": {
     "lint": "eslint src test",
@@ -20,7 +20,8 @@
     "pretest": "npm run lint",
     "test": "mocha",
     "coverage": "c8 --reporter=lcov --reporter=text-summary npm test",
-    "debug": "node inspect $(npm bin)/_mocha"
+    "debug": "node inspect $(npm bin)/_mocha",
+    "tsc": "tsc"
   },
   "repository": {
     "type": "git",

@@ -24,12 +24,32 @@ const { floor, pow, max, min } = Math
  *
  */
 export class Bitmask {
+  value: number;
 
-  static test(a, b) {
+  static YEAR: number
+  static Y: number
+  static MONTH: number
+  static M: number
+  static DAY: number
+  static D: number
+  static MD: number
+  static YMD: number
+  static YM: number
+  static YYXX: number
+  static YYYX: number
+  static XXXX: number
+  static DX: number
+  static XD: number
+  static MX: number
+  static XM: number
+
+  static UA: [number, number, number, number, number, number]
+
+  static test(a: Bitmask | number | boolean | string, b: Bitmask | number | boolean | string) {
     return this.convert(a) & this.convert(b)
   }
 
-  static convert(value = 0) { // eslint-disable-line complexity
+  static convert(value: Bitmask | number | boolean | string = 0): number { // eslint-disable-line complexity
     value = value || 0
 
     if (value instanceof Bitmask) return value.value
@@ -51,12 +71,12 @@ export class Bitmask {
     }
   }
 
-  static compute(value) {
+  static compute(value: string) {
     return value.split('').reduce((memo, c, idx) =>
       (memo | (SYMBOL.test(c) ? pow(2, idx) : 0)), 0)
   }
 
-  static values(mask, digit = 0) {
+  static values(mask: string, digit = 0) {
     let num = Bitmask.numbers(mask, digit).split('')
     let values = [Number(num.slice(0, 4).join(''))]
 
@@ -66,11 +86,11 @@ export class Bitmask {
     return Bitmask.normalize(values)
   }
 
-  static numbers(mask, digit = 0) {
-    return mask.replace(SYMBOLS, digit)
+  static numbers(mask: string, digit = 0) {
+    return mask.replace(SYMBOLS, digit.toString())
   }
 
-  static normalize(values) {
+  static normalize(values: number[]) {
     if (values.length > 1)
       values[1] = min(11, max(0, values[1] - 1))
 
@@ -89,7 +109,9 @@ export class Bitmask {
     return this.value & Bitmask.convert(value)
   }
 
-  bit(k) {
+  is = this.test;
+
+  bit(k: number) {
     return this.value & pow(2, k)
   }
 
@@ -100,11 +122,11 @@ export class Bitmask {
   get year() { return this.test(Bitmask.YEAR) }
 
 
-  add(value) {
+  add(value: string | number | boolean | Bitmask) {
     return (this.value = this.value | Bitmask.convert(value)), this
   }
 
-  set(value = 0) {
+  set(value: string | number | boolean | Bitmask = 0) {
     return (this.value = Bitmask.convert(value)), this
   }
 
@@ -112,7 +134,7 @@ export class Bitmask {
     return input.map((c, idx) => this.bit(offset + idx) ? symbol : c)
   }
 
-  masks(values, symbol = 'X') {
+  masks(values: string[], symbol = 'X') {
     let offset = 0
 
     return values.map(value => {
@@ -124,11 +146,11 @@ export class Bitmask {
   }
 
   // eslint-disable-next-line complexity
-  max([year, month, day]) {
+  max([year, month, day]: [number, number, number]) {
     if (!year) return []
 
     year = Number(
-      (this.test(Bitmask.YEAR)) ? this.masks([year], '9')[0] : year
+      (this.test(Bitmask.YEAR)) ? this.masks([year.toString()], '9')[0] : year
     )
 
     if (!month) return [year]
@@ -181,11 +203,11 @@ export class Bitmask {
   }
 
   // eslint-disable-next-line complexity
-  min([year, month, day]) {
+  min([year, month, day]: [number, number, number]) {
     if (!year) return []
 
     year = Number(
-      (this.test(Bitmask.YEAR)) ? this.masks([year], '0')[0] : year
+      (this.test(Bitmask.YEAR)) ? this.masks([year.toString()], '0')[0] : year
     )
 
     if (month == null) return [year]
@@ -230,7 +252,7 @@ export class Bitmask {
       ].join(''))
   }
 
-  qualified(idx) { // eslint-disable-line complexity
+  qualified(idx: number) { // eslint-disable-line complexity
     switch (idx) {
     case 1:
       return this.value === Bitmask.YEAR ||
@@ -250,7 +272,7 @@ export class Bitmask {
     }
   }
 
-  qualify(idx) {
+  qualify(idx: number) {
     return (this.value = this.value | Bitmask.UA[idx]), this
   }
 
@@ -263,9 +285,7 @@ export class Bitmask {
   }
 }
 
-Bitmask.prototype.is = Bitmask.prototype.test
-
-function leap(year) {
+function leap(year: number) {
   if (year % 4 > 0) return false
   if (year % 100 > 0) return true
   if (year % 400 > 0) return false

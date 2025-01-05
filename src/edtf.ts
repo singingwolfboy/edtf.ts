@@ -1,9 +1,9 @@
 import * as types from './types.js'
-import { parse } from './parser.js'
+import { Constraints, ParserResult, parse } from './parser.js'
 
 const UNIX_TIME = /^\d{5,}$/
 
-export function edtf(...args) {
+export function edtf(...args: [string | number | ParserResult] | [string, Partial<Constraints>]) {
   if (!args.length)
     return new types.Date()
 
@@ -19,6 +19,6 @@ export function edtf(...args) {
     }
   }
 
-  let res = parse(...args)
+  let res = parse(...args as [string, Partial<Constraints>])
   return new types[res.type](res)
 }

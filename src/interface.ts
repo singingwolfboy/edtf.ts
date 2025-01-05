@@ -1,20 +1,23 @@
-import { parse } from './parser.js'
+import { ParserResult, parse } from './parser.js'
+import { EDTFType } from './types.js';
 
-export class ExtDateTime {
+export abstract class ExtDateTime {
+  abstract values: number[]
+  constructor(input: number | string | ExtDateTime | Partial<ParserResult> | undefined) {}
 
   static get type() {
-    return this.name
+    return this.name as EDTFType;
   }
 
-  static parse(input) {
+  static parse(input: string) {
     return parse(input, { types: [this.type] })
   }
 
-  static from(input) {
+  static from(input: ExtDateTime | string) {
     return (input instanceof this) ? input : new this(input)
   }
 
-  static UTC(...args) {
+  static UTC(...args: Parameters<typeof Date.UTC>) {
     let time = Date.UTC(...args)
 
     // ECMA Date constructor converts 0-99 to 1900-1999!
@@ -36,6 +39,8 @@ export class ExtDateTime {
     return true
   }
 
+  abstract toEDTF(): string;
+
   toJSON() {
     return this.toEDTF()
   }
@@ -52,20 +57,23 @@ export class ExtDateTime {
     return this.toEDTF()
   }
 
+  abstract min: number;
+  abstract max: number;
+
   valueOf() {
     return this.min
   }
 
-  [Symbol.toPrimitive](hint) {
+  [Symbol.toPrimitive](hint: string) {
     return (hint === 'number') ? this.valueOf() : this.toEDTF()
   }
 
 
-  covers(other) {
+  covers(other: this) {
     return (this.min <= other.min) && (this.max >= other.max)
   }
 
-  compare(other) {
+  compare(other: this) {
     if (other.min == null || other.max == null) return null
 
     let [a, x, b, y] = [this.min, this.max, other.min, other.max]
@@ -79,7 +87,7 @@ export class ExtDateTime {
     return 0
   }
 
-  includes(other) {
+  includes(other: this) {
     let covered = this.covers(other)
     if (!covered || !this[Symbol.iterator]) return covered
 
@@ -90,17 +98,17 @@ export class ExtDateTime {
     return false
   }
 
-  *until(then) {
+  *until(then: this) {
     yield this
     if (this.compare(then)) yield* this.between(then)
   }
 
-  *through(then) {
+  *through(then: this) {
     yield* this.until(then)
     if (this.compare(then)) yield then
   }
 
-  *between(then) {
+  *between(then: this) {
     then = this.constructor.from(then)
 
     let cur = this
@@ -116,7 +124,7 @@ export class ExtDateTime {
   }
 }
 
-function adj(date, by = 1900) {
+function adj(date: Date, by = 1900) {
   date.setUTCFullYear(date.getUTCFullYear() - by)
   return date.getTime()
 }

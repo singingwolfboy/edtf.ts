@@ -1,15 +1,16 @@
 import assert from './assert.js'
 import { ExtDateTime } from './interface.js'
 import { pad } from './date.js'
+import type { ParserResult } from './parser.js'
 
 const { abs } = Math
 
-const V = new WeakMap()
-const S = new WeakMap()
+const V = new WeakMap<Year, number[]>()
+const S = new WeakMap<Year, number>()
 
 export class Year extends ExtDateTime {
-  constructor(input) {
-    super()
+  constructor(input: number | string | Year | Partial<ParserResult> | undefined) {
+    super(input)
 
     V.set(this, [])
 
@@ -31,9 +32,9 @@ export class Year extends ExtDateTime {
         if (input.type) assert.equal('Year', input.type)
 
         assert(input.values)
-        assert(input.values.length)
+        assert(input.values!.length)
 
-        this.year = input.values[0]
+        this.year = input.values![0]
         this.significant = input.significant
       }
       break
@@ -64,7 +65,7 @@ export class Year extends ExtDateTime {
   }
 
   get values() {
-    return V.get(this)
+    return V.get(this) as number[]
   }
 
   get min() {

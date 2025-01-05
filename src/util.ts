@@ -2,11 +2,11 @@ import { Bitmask } from './bitmask.js'
 const { assign } = Object
 
 
-export function num(data) {
+export function num(data: number | string | string[] ) {
   return Number(Array.isArray(data) ? data.join('') : data)
 }
 
-export function join(data) {
+export function join(data: any[]) {
   return data.join('')
 }
 
@@ -14,7 +14,7 @@ export function zero() { return 0 }
 
 export function nothing() { return null }
 
-export function pick(...args) {
+export function pick<T>(...args: T[]) {
   return args.length === 1 ?
     data => data[args[0]] :
     data => concat(data, args)
@@ -24,9 +24,9 @@ export function pluck(...args) {
   return data => args.map(i => data[i])
 }
 
-export function concat(data, idx = data.keys()) {
+export function concat<T>(data: T[], idx = data.keys()) {
   return Array.from(idx)
-    .reduce((memo, i) => data[i] !== null ? memo.concat(data[i]) : memo, [])
+    .reduce((memo, i) => data[i] !== null ? memo.concat(data[i]) : memo, [] as T[])
 }
 
 export function merge(...args) {

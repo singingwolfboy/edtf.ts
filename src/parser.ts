@@ -1,17 +1,34 @@
 import nearley from 'nearley'
-import grammar from './grammar.js'
+import grammar from './grammar'
+import type { EDTFType } from './types';
 
-export const defaults = {
+export interface Constraints {
+  level: 0 | 1 | 2;
+  types: EDTFType[];
+  seasonIntervals: boolean;
+}
+
+export interface ParserResult {
+  level: 0 | 1 | 2;
+  type: EDTFType;
+  values: number[];
+  uncertain?: number;
+  approximate?: number;
+  unspecified?: number;
+  significant?: number;
+}
+
+export const defaults: Constraints = {
   level: 2,
   types: [],
   seasonIntervals: false
 }
 
-function byLevel(a, b) {
+function byLevel(a: ParserResult, b: ParserResult) {
   return a.level < b.level ? -1 : a.level > b.level ? 1 : 0
 }
 
-function limit(results, constraints = {}) {
+function limit(results: ParserResult[], constraints: Partial<Constraints> = {}) {
   if (!results.length) return results
 
   let {
@@ -38,7 +55,7 @@ function isSeasonInterval({ type, values }) {
   return type === 'Interval' && values[0].type === 'Season'
 }
 
-function best(results) {
+function best(results: ParserResult[]) {
   if (results.length < 2) return results[0]
 
   // If there are multiple results, pick the first
@@ -46,7 +63,7 @@ function best(results) {
   return results.sort(byLevel)[0]
 }
 
-export function parse(input, constraints = {}) {
+export function parse(input: string, constraints: Partial<Constraints> = {}) {
   try {
     let nep = parser()
     let res = best(limit(nep.feed(input).results, constraints))
